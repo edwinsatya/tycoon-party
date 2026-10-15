@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      # Phase 0 gate (PRD 13.5): 1,000 bot matches with no crash, stuck game or invariant break.
+      - run: pnpm sim --matches 1000
+      - run: pnpm sim --matches 300 --mode blitz --seed ci-blitz
